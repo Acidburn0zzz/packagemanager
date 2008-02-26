@@ -20,50 +20,37 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import os
 import unittest
-import tempfile
-import pkg.client.imageconfig as imageconfig
+import os
 
+import pkg.depotcontroller as dc
 
-class TestImageConfig(unittest.TestCase):
-        def setUp(self):
+import testutils
 
-		fd, self.sample_conf = tempfile.mkstemp()
-                f = os.fdopen(fd, "w")
+class TestDepot(testutils.SingleDepotTestCase):
 
-		f.write("""\
-[policy]
-Display-Copyrights: False
+        def test_depot_ping(self):
+                """ Ping the depot several times """
 
-[authority_sfbay.sun.com]
-prefix: sfbay.sun.com
-origin: http://zruty.sfbay:10001
-mirrors:
-""")
-                f.close()
-		self.ic = imageconfig.ImageConfig()
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
+                self.assert_(self.dc.is_alive())
 
-        def tearDown(self):
-		try:
-			os.remove(self.sample_conf)
-		except:
-			pass
+        def testStartStop(self):
+                """ Start and stop the depot several times """
+                self.dc.stop()
+                for i in range(0, 5):
+                        self.dc.start()
+                        self.assert_(self.dc.is_alive())
+                        self.dc.stop()
+                        self.assert_(not self.dc.is_alive())
 
-	def test_read(self):
-		self.ic.read(self.sample_conf)
+                self.dc.start()
 
-	def test_missing_conffile(self):
-		#
-		#  See what happens if the conf file is missing.
-		#
-		os.remove(self.sample_conf)
-		self.assertRaises(RuntimeError, self.ic.read, self.sample_conf)
-
-# XXX more test cases needed.
 
 if __name__ == "__main__":
         unittest.main()

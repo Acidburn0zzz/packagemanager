@@ -20,17 +20,38 @@
 # CDDL HEADER END
 #
 
-# Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
-import pkg.misc as misc
+import os
 
-class TestMisc(unittest.TestCase):
+import testutils
 
-        def test_hash_file_name(self):
-                fn = misc.hash_file_name("abcdefghijklmnopqrstuvwxyz")
-                self.assertEqual(fn, "ab/cdefgh/abcdefghijklmnopqrstuvwxyz")
+class TestImageCreate(testutils.SingleDepotTestCase):
+
+        def test_basic(self):
+                """ Create an image, verify it. """
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("verify")
+
+
+class TestImageCreateNoDepot(testutils.pkg5TestCase):
+        def test_bad_image_create(self):
+                """ Create image from non-existent server """
+
+		#
+		# Currently port 4 is unassigned by IANA and we
+		# Can just hope that it never gets assigned.
+		# We choose localhost because, well, we think
+		# it will be universally able to be looked up.
+		#
+                durl = "http://localhost:4"
+		self.assertRaises(testutils.UnexpectedExitCodeException, \
+		    self.image_create, durl)
+
 
 if __name__ == "__main__":
         unittest.main()
